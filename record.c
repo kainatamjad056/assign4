@@ -1,149 +1,158 @@
-#include<stdio.h>
-#include<string.h>
-#include<stdlib.h>
-#include<ctype.h>
-void choice();
-void addpatient();
-void deletepatient();
-void display();
-struct patient //structure having patient record
+void update();
+void tosearch();
+void displayrecord();
+void displayfile();
+void update()
 {
-    int id;
-    char name[20];
-    char cnic[13];
-    char phone[11];
-    char disease[20];
-    char isadmitted[10];
-};
-int main()
-{
-     choice();  
-}
-void choice() //function to give choice to user to select
-{
-int cho=0;
-
-while(cho!=6)
-{
-    printf(" 1. Add Patient\n 2. Delete Patient\n 3. Update Patient\n 4. Search Patient\n5. Display all records !\n 6. EXIT !\n");
-printf("Enter your choice: ");
-scanf("%d", &cho);
-if (cho == 1)
-{
-    addpatient();
-}
-if (cho == 2)
-{
-    deletepatient();
-}
-if (cho == 3)
-{
- update();
-}
-if (cho == 4)
-{
- tosearch();
-}
-if (cho == 5)
-{
- displayrecord();
-}
-if (cho == 6)
-{
-printf("exit");
-exit(0);
-}
-
-}
-}
-void addpatient() //function to get patient's data from user
-{
+    FILE* fp1, * fp2;
     struct patient patient1;
-    FILE* ptr;
-    
-    printf("------PATIENT'S INFORMATION------\n");
-    printf("Enter patient's ID\n");
-     scanf("%d",&patient1.id);
-     fflush(stdin);
-    printf("Enter patient's NAME \n");
-    gets(patient1.name);
-    fflush(stdin);
+    fp1 = fopen("Precord.txt", "r");         //opening two files one in reading and other in writing
+    fp2 = fopen("update.txt", "w");
 
-    printf("Enter patient's PHONE NUMBER (i.e: XXXXXXXXXX)\n");
-    gets(patient1.phone);
-    fflush(stdin);
-    while(strlen(patient1.phone)>11||strlen(patient1.phone)<11)
-     {
+    if (fp1 == NULL)
+    {
+        fprintf(stderr, "Can't open file");         //if file is not open then exit
+        exit(0);
+    }
+    if (fp1 != NULL)
+    {
+    int id;
+    printf("Enter the ID you want to update:");            //ask user to what id he wants to update
+     scanf("%d",&id);
+
+    while (fread(&patient1,sizeof(struct patient),1,fp1))         //read address of data from patientrecord file
+    {
+        if (id == patient1.id)
+        {                                           // if ids are same then
+            int choice=0;
+            printf("updation is:");
+            printf("type 1 to update phone no:\n type 2 to update disease:\ntype3 to update admit or not:\ntyppe 4 to continue:");
+            printf("select:");
+            scanf("%d",&choice);            //as we cant change user name and cnic because they are permanent 
+            fflush(stdin);
+            if(choice==1)
+            {
+            while(strlen(patient1.phone)>11||strlen(patient1.phone)<11)
+            {  
         printf("Please enter only 11 digit phone number\n");
         gets(patient1.phone);
         fflush(stdin);
-     }
-    
-     
-
-
-    printf("Enter patient's CNIC (i.e: XXXXXXXXXXXXX)\n");
-    gets(patient1.cnic);
-    fflush(stdin);
-    while(strlen(patient1.cnic)>13||strlen(patient1.cnic)<13)
-     {
-        printf("Please enter only 13 digit CNIC number\n");
-        gets(patient1.cnic);
-        fflush(stdin);
-     }
-
-
-    printf("Enter patient's Disease \n");
-    gets(patient1.disease);
-    fflush(stdin);
-
-    printf("Patient is admitted or not? \n");
-    gets(patient1.isadmitted);
-    fflush(stdin);
-
-    ptr = fopen("Precord.txt", "a"); //opening file to write data
-    fwrite(&patient1,sizeof(struct patient),1,ptr);
-    fclose(ptr);
-    displayfile();
+            }
+            }
+            else if(choice==2)
+            {
+                printf("\nenter disease:");
+                gets(patient1.disease);
+                fflush(stdin);
+            }
+            else if(choice==3)
+            {
+                printf("\nenter admit or not:");
+                gets(patient1.isadmitted);
+                fflush(stdin);
+            }
+            else if (choice==4)
+            {
+                id != patient1.id;
+            }
+        }
+        fwrite(&patient1, sizeof(struct patient), 1, fp2);   //writing into 2 file
+    }
+    fclose(fp1);
+    fclose(fp2);                                            // closing files
+fp1 = fopen("Precord.txt", "w");
+    fp2 = fopen("update.txt", "r");
+    while (fread(&patient1, sizeof(struct patient), 1, fp2))
+        {
+            fwrite(&patient1, sizeof(struct patient), 1, fp1);          //now open both files and convert 2 data into 1
+        }
+fclose(fp1);
+fclose(fp2);
+remove("update.txt");
+printf("Record is updated successfully");            //display message
 }
-void deletepatient() //function to delete patient's record
+displayfile();
+}
+
+void tosearch()
 {
-
-    FILE* fp1, * fp2;  //pointers to file
+        FILE* fp;
     struct patient patient1;
-    fp1 = fopen("Precord.txt", "r");
-    fp2 = fopen("copy.txt", "w");
+    fp = fopen("Precord.txt", "r");
 
-    if (fp1 == NULL)
+    if (fp == NULL)
     {
         fprintf(stderr, "Can't open file");
         exit(0);
     }
-    if (fp1 != NULL) //incase the file is not empty
+    if (fp != NULL)
     {
     int id;
-    printf("Enter the ID you want to delete");
+    int counter=0;
+    printf("Enter the ID you want to search");
      scanf("%d",&id);
 
-    while (fread(&patient1,sizeof(struct patient),1,fp1))
+    while (fread(&patient1,sizeof(struct patient),1,fp))
     {
-        if (id != patient1.id) 
+        if (id == patient1.id)
         {
-            fwrite(&patient1, sizeof(struct patient), 1, fp2);
-        }
+            printf("id of patient = %d\n", patient1.id);              // to search a specific id and print it on console 
+            printf("name of patient= %s\n", patient1.name);
+            printf("cnic of patient= %s\n", patient1.cnic);
+            printf("phone no of patient= %s\n", patient1.phone);
+            printf("disease of patient= %s\n", patient1.disease);
+            printf("Patient is admitted or not = %s\n\n", patient1.isadmitted);
+            counter++;  
     }
-    fclose(fp1);
-    fclose(fp2);
-fp1 = fopen("Precord.txt", "w");
-    fp2 = fopen("copy.txt", "r");
-    while (fread(&patient1, sizeof(struct patient), 1, fp2))
-        {
-            fwrite(&patient1, sizeof(struct patient), 1, fp1);
-        }
-fclose(fp1);
-fclose(fp2);
-remove("copy.txt");
-printf("Record deleted successfully");
+    }
+    fclose(fp);
 }
 displayfile();
+}
+void displayrecord()
+{
+    
+    FILE* ptr;
+    struct patient p;
+int count = 0;
+    ptr = fopen("Precord.txt", "r");
+    if (ptr == NULL)
+    {
+        fprintf(stderr, "not open");
+        exit(0);                                             //to display updated record on console
+    }
+    else
+    {
+        while (fread(&p, sizeof(struct patient), 1, ptr))
+        {
+            printf("ID = %d\n", p.id);
+            printf("NAME = %s\n", p.name);
+            printf("CNIC = %s\n", p.cnic);
+            printf("PHONE = %s\n", p.phone);
+            printf("DISEASE = %s\n", p.disease);
+            printf("ISADMITTED = %s\n\n", p.isadmitted);
+            count++;
+        }
+        fclose(ptr);
+    }
+    if (count == 0)
+    {
+        printf("there is no record\n");
+    }
+}
+void displayfile()
+{
+    struct patient p;
+    FILE *ptr1, *ptr2;                                      //to display changes in file we make another function
+    
+    ptr1 = fopen("Precord.txt","r");
+    ptr2 = fopen("PATIENT'S_RECORD.txt","w");
+    
+    fprintf(ptr2,"%-2s\t\t%-20s%-13s%-11s%-20s%-10s\n","ID","NAME","CNIC","PHONE","DISEASE","ISADMIITED");
+    while(fread(&p,sizeof(struct patient),1,ptr1))
+    {
+        fprintf(ptr2,"%-2d\t\t%-20s%-13s%-11s%-20s%-10s\n",p.id,p.name,p.cnic,p.phone,p.disease,p.isadmitted);  
+    }
+    fclose(ptr1);
+    fclose(ptr2);
 }
